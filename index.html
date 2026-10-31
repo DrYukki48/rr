@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Halloween Cho Ck Iu 🎃👻</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #2b1055 0%, #7597de 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Container chính */
+        .quiz-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 450px;
+            width: 100%;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            text-align: center;
+            position: relative;
+            z-index: 10;
+            backdrop-filter: blur(5px);
+        }
+
+        h2 {
+            color: #ff6b6b;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+        }
+
+        .options-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-top: 20px;
+            position: relative;
+            min-height: 120px;
+        }
+
+        .btn-option {
+            background: #ffffff;
+            border: 2px solid #ff6b6b;
+            color: #ff6b6b;
+            padding: 12px 20px;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-option:hover {
+            background: #ff6b6b;
+            color: #ffffff;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 107, 107, 0.4);
+        }
+
+        /* Riêng nút "Không" sẽ có khả năng chạy trốn */
+        #btn-no {
+            border-color: #adb5bd;
+            color: #6c757d;
+            position: relative;
+            transition: 0.15s ease-out;
+        }
+
+        .result-box {
+            display: none;
+            color: #4a4a4a;
+            line-height: 1.6;
+        }
+
+        .icon-header {
+            font-size: 3rem;
+            animation: bounce 1s infinite alternate;
+        }
+
+        @keyframes bounce {
+            to { transform: translateY(-10px); }
+        }
+
+        /* Hiệu ứng bí ngô / kẹo rơi background */
+        .falling-item {
+            position: absolute;
+            top: -30px;
+            font-size: 24px;
+            user-select: none;
+            pointer-events: none;
+            animation: fall linear infinite;
+        }
+
+        @keyframes fall {
+            to {
+                transform: translateY(105vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="quiz-card">
+        <div id="quiz-box">
+            <div class="icon-header">🎃</div>
+            <h2 id="question-text">Đang tải câu hỏi...</h2>
+            <div class="options-grid" id="options-container">
+                <!-- Nút bấm sẽ được sinh tự động bằng JavaScript -->
+            </div>
+        </div>
+
+        <div id="result-box" class="result-box">
+            <div class="icon-header">🍬</div>
+            <h2 style="margin-top:15px; color: #ff6b6b;">Thành Công Nhé!</h2>
+            <p id="final-message" style="font-size: 1.1rem; font-weight: 500; color: #2b1055;"></p>
+        </div>
+    </div>
+
+    <script>
+        // --- NỘI DUNG CÂU HỎI ---
+        const quizData = [
+            {
+                question: "Ck iu có muốn Halloween này được ăn kẹo hơm?",
+                options: [
+                    { text: "Có chứeee! 🍬", next: "result" }, 
+                    { text: "Không đâu 🎃", action: "run" }
+                ]
+            }
+        ];
+
+        const finalSecretMessage = "Yên tâm nha, kẹo ngọt và cả chiếc ôm ấm áp đã sẵn sàng dành riêng cho ck iu trong đêm Halloween này rồi đó! 🥰👻✨";
+
+        let currentQuestion = 0;
+
+        function loadQuestion() {
+            const q = quizData[currentQuestion];
+            document.getElementById('question-text').innerText = q.question;
+            
+            const container = document.getElementById('options-container');
+            container.innerHTML = '';
+
+            q.options.forEach((opt) => {
+                const btn = document.createElement('button');
+                btn.className = 'btn-option';
+                btn.innerText = opt.text;
+
+                if (opt.text.includes("Không")) {
+                    btn.id = "btn-no";
+                    // Khi rê chuột hoặc chạm vào nút "Không", nó sẽ chạy trốn ngẫu nhiên
+                    btn.onmouseover = moveButton;
+                    btn.ontouchstart = moveButton; // Hỗ trợ cả trên điện thoại
+                    btn.onclick = (e) => {
+                        e.preventDefault();
+                        moveButton();
+                    };
+                } else {
+                    btn.onclick = () => showResult();
+                }
+
+                container.appendChild(btn);
+            });
+        }
+
+        // Hàm làm cho nút "Không" chạy trốn quanh màn hình
+        function moveButton() {
+            const btnNo = document.getElementById('btn-no');
+            const x = Math.random() * 200 - 100; // Dịch chuyển ngang ngẫu nhiên
+            const y = Math.random() * 150 - 75;  // Dịch chuyển dọc ngẫu nhiên
+            btnNo.style.transform = `translate(${x}px, ${y}px)`;
+        }
+
+        function showResult() {
+            document.getElementById('quiz-box').style.display = 'none';
+            const resultBox = document.getElementById('result-box');
+            resultBox.style.display = 'block';
+            document.getElementById('final-message').innerText = finalSecretMessage;
+        }
+
+        // --- HIỆU ỨNG HALLOWEEN RƠI (Bí ngô, kẹo, ma) ---
+        function createFallingItem() {
+            const item = document.createElement('div');
+            item.classList.add('falling-item');
+            item.innerText = ['🎃', '🍬', '👻', '🦇', '🍫'][Math.floor(Math.random() * 5)];
+            item.style.left = Math.random() * 100 + 'vw';
+            item.style.animationDuration = Math.random() * 3 + 3 + 's';
+            item.style.fontSize = Math.random() * 12 + 18 + 'px';
+            document.body.appendChild(item);
+
+            setTimeout(() => { item.remove(); }, 6000);
+        }
+        setInterval(createFallingItem, 400);
+
+        // Khởi chạy câu hỏi
+        loadQuestion();
+    </script>
+</body>
+</html>
